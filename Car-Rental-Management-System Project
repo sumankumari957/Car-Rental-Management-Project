@@ -1,96 +1,229 @@
-#include<iostream>
+#include <iostream>
+#include <string>
 using namespace std;
-  
-int reg[5]={123, 234, 345, 456, 567};
-string comp[5] = {"Sujuki ", "Hunda ", "Tayota ", "MG ", "BMW "};
-int rent[5] = {2000, 2500, 3000, 3500, 5000};
-   char avail[5] = {'y', 'y', 'y', 'y', 'y'};
-   int size = sizeof(reg)/sizeof(reg[0]);
 
-   void showFun(){
-    for(int i=0; i<size; i++){
-      if(avail[i]=='y'){
-        cout<<"car "<<comp[i]<<" with reg "<<reg[i]<<" and with Rent "<<rent[i]<<endl;
-      }
-    } 
-   }
+// Maximum cars in the system
+const int MAX_CARS = 20;
 
-   void reserveFun(){
-      int regNo, days;
-      cout<<"Enter registration no.: ";
-      cin>>regNo;
-      cout<<"Enter Total days";
-      cin>>days;
-   bool found = false;
-      for(int i=0; i<size; i++){
-        if(regNo == reg[i] && avail[i]=='y'){
-            found = true;
-            avail[i]='n';
-            int bill = rent[i] * days;
-            cout<<" Your Rent for "<<comp[i]<<"with reg "<< reg[i]<<" is: "<<bill<<endl;
-        }
-      }
-      if(!found){
-        cout<<" This car is unavailable"<<endl;
-      }
-   }
+int reg[MAX_CARS] = {123, 234, 345, 456, 567};
+string comp[MAX_CARS] = {"Suzuki", "Honda", "Toyota", "MG", "BMW"};
+int rent[MAX_CARS] = {2000, 2500, 3000, 3500, 5000};
+char avail[MAX_CARS] = {'y', 'y', 'y', 'y', 'y'};
 
-   void returnFun(){
-    cout<<"Enter Registration no.:";
-    int regNo;
-    cin>>regNo;
+// Customer Details
+string custName[MAX_CARS];
+string custPhone[MAX_CARS];
+string custID[MAX_CARS];
+int reservedDays[MAX_CARS];  
 
-    bool found = false;
-    for(int i=0; i<size; i++){
-      if(regNo == reg[i]){
-         found = true;
-         avail[i]='y';
-         cout<<"Car is Retruned"<<endl;
-      }
-    }
-    if(!found){
-      cout<<"Incurrect Registration No!"<<endl; 
-    }
-   }
-int main(){
-     while(true){
-        cout<<" Car Rental Management System "<<endl;
-        cout<<" -----------------------------"<<endl;
-        cout<<"1. Show Available Cars. "<<endl;
-        cout<<"2. Reserve a Car. "<<endl;
-        cout<<"3. Return a Car. "<<endl;
-        cout<<"4. Exit. "<<endl;
+// Car rental history
+string history[100];
+int histCount = 0;
 
-        int choice; 
-          cout<<"Enter your choice: " ;
-          cin>>choice;
-        if(choice==1){
-            //Available Car
-              system("cls");
-              showFun();
-            cout<<" "<<endl;
-        }
-        else if(choice==2){
-            //reserve a Car
-              system("cls");
-              reserveFun();
-            cout<<" "<<endl;
-        }
-        else if(choice==3){
-            //Return a Car
-            system("cls");
-            returnFun();
-            cout<<" "<<endl;
-        }
-        else if(choice==4){
-            system("cls");
-            cout<<"Best of Luck!"<<endl;
-            cout<<" "<<endl;
-            break;
-        }
-        else{
-            system("cls");
-            cout<<"Invalid Input!"<<endl;
+int size = 5; // current number of cars
+
+//-----------------------------------------
+// Show available cars
+//-----------------------------------------
+void showFun() {
+    cout << "\nAvailable Cars:\n";
+    for (int i = 0; i < size; i++) {
+        if (avail[i] == 'y') {
+            cout << "Car: " << comp[i] << " | Reg: " << reg[i]
+                 << " | Rent per Day: " << rent[i] << endl;
         }
     }
 }
+
+//-----------------------------------------
+// Reserve a car
+//-----------------------------------------
+void reserveFun() {
+    int regNo, days;
+    string name, phone, id;
+
+    cout << "Enter Your Name: ";
+    cin >> name;
+    cout << "Enter Phone Number: ";
+    cin >> phone;
+    cout << "Enter ID Proof (e.g., License/Aadhaar): ";
+    cin >> id;
+    cout << "Enter Registration No. of Car: ";
+    cin >> regNo;
+    cout << "Enter Total Days: ";
+    cin >> days;
+
+    bool found = false;
+    for (int i = 0; i < size; i++) {
+        if (regNo == reg[i] && avail[i] == 'y') {
+            found = true;
+            avail[i] = 'n';
+            reservedDays[i] = days;
+            custName[i] = name;
+            custPhone[i] = phone;
+            custID[i] = id;
+
+            int bill = rent[i] * days;
+            // Discount if more than 5 days
+            if (days > 5) {
+                bill -= bill * 0.1; // 10% discount
+                cout << "n You got a 10% discount!" << endl;
+            }
+
+            cout << "\n Car booked successfully!" << endl;
+            cout << "Customer: " << custName[i] << " | Phone: " << custPhone[i]
+                 << " | ID: " << custID[i] << endl;
+            cout << "Car: " << comp[i] << " | Reg: " << reg[i]
+                 << " | Days: " << days << " | Bill: " << bill << endl;
+
+            // Save in history
+            history[histCount++] =
+                "Booked: " + name + " (" + phone + ", ID:" + id + ") reserved " +
+                comp[i] + " (Reg " + to_string(reg[i]) + ") for " +
+                to_string(days) + " days. Bill: " + to_string(bill);
+        }
+    }
+    if (!found) {
+        cout << " Car unavailable or wrong reg no!" << endl;
+    }
+}
+
+//-----------------------------------------
+// Return a car
+//-----------------------------------------
+void returnFun() {
+    int regNo, actualDays;
+    cout << "Enter Registration No.: ";
+    cin >> regNo;
+    cout << "Enter Actual Days Used: ";
+    cin >> actualDays;
+
+    bool found = false;
+    for (int i = 0; i < size; i++) {
+        if (regNo == reg[i] && avail[i] == 'n') {
+            found = true;
+            avail[i] = 'y';
+
+            // Calculate original rent
+            int originalBill = rent[i] * reservedDays[i];
+
+            // Penalty for late return
+            int penalty = 0;
+            if (actualDays > reservedDays[i]) {
+                penalty = (actualDays - reservedDays[i]) * 500; // 500/day late fee
+            }
+
+            // Total bill = original bill + penalty
+            int totalBill = originalBill + penalty;
+
+            cout << "\n Car Returned Successfully!" << endl;
+            cout << "Customer: " << custName[i]
+                 << " | Phone: " << custPhone[i]
+                 << " | ID: " << custID[i] << endl;
+            cout << "Car: " << comp[i] << " | Reg: " << reg[i] << endl;
+            cout << "Reserved Days: " << reservedDays[i]
+                 << " | Actual Days: " << actualDays << endl;
+            cout << "Original Bill: " << originalBill << endl;
+            cout << "Late Penalty: " << penalty << endl;
+            cout << " Final Total Payable: " << totalBill << endl;
+
+            // Save in history
+            history[histCount++] =
+                "Returned: " + custName[i] + " (" + custPhone[i] + ", ID:" + custID[i] +
+                ") returned " + comp[i] + " (Reg " + to_string(reg[i]) +
+                "). Total Paid: " + to_string(totalBill);
+
+            // Reset data
+            custName[i] = "";
+            custPhone[i] = "";
+            custID[i] = "";
+            reservedDays[i] = 0;
+        }
+    }
+    if (!found) {
+        cout << " Incorrect Registration No or Car not rented!" << endl;
+    }
+}
+
+//-----------------------------------------
+// Add new car (Admin Feature)
+//-----------------------------------------
+void addCar() {
+    if (size >= MAX_CARS) {
+        cout << " Cannot add more cars, limit reached!" << endl;
+        return;
+    }
+    int newReg, newRent;
+    string newComp;
+    cout << "Enter New Car Company Name: ";
+    cin >> newComp;
+    cout << "Enter Registration No.: ";
+    cin >> newReg;
+    cout << "Enter Rent per Day: ";
+    cin >> newRent;
+
+    reg[size] = newReg;
+    comp[size] = newComp;
+    rent[size] = newRent;
+    avail[size] = 'y';
+    size++;
+
+    cout << " New Car Added Successfully!" << endl;
+}
+
+//-----------------------------------------
+// Show car rental history
+//-----------------------------------------
+void showHistory() {
+    cout << "\n Car Rental History:\n";
+    if (histCount == 0) {
+        cout << "No history available yet." << endl;
+    } else {
+        for (int i = 0; i < histCount; i++) {
+            cout << i + 1 << ". " << history[i] << endl;
+        }
+    }
+}
+
+//-----------------------------------------
+// Main Menu
+//-----------------------------------------
+int main() {
+    while (true) {
+        cout << "\n===== Car Rental Management System =====" << endl;
+        cout << "1. Show Available Cars" << endl;
+        cout << "2. Reserve a Car" << endl;
+        cout << "3. Return a Car" << endl;
+        cout << "4. Add New Car (Admin)" << endl;
+        cout << "5. Show Rental History" << endl;
+        cout << "6. Exit" << endl;
+
+        int choice;
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                showFun();
+                break;
+            case 2:
+                reserveFun();
+                break;
+            case 3:
+                returnFun();
+                break;
+            case 4:
+                addCar();
+                break;
+            case 5:
+                showHistory();
+                break;
+            case 6:
+                cout << " Thank you for using Car Rental System!" << endl;
+                return 0;
+            default:
+                cout << " Invalid Input!" << endl;
+        }
+    }
+}
+
